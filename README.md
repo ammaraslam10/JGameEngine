@@ -49,7 +49,7 @@ A window is a JFrame but it has additional properties. The window is updated aft
 Classes may be extended to `GameEngine.Object` to have the properties `x`, `y` and `name` available. Objects must implement `start()` and `update()` methods. Objects need to be added to the Game Space in order to have these methods automatically invoke on every Game Update.
 |   |   |
 |--|--|
-| [`void addObject(JGameEngine.Object)`](#) <br/> Add an object to the Game Space. | [`void removeObject(JGameEngine.Object)`](#) <br/> Remove an object to the Game Space. |
+| [`void addObject(JGameEngine.Object)`](#) <br/> Add an object to the Game Space. | [`void removeObject(JGameEngine.Object)`](#) <br/> Remove an object from the Game Space. |
 
 ### Sprite
 Sprites need to be created before they are added. A sprite in this context represents an image that can be drawn. Each sprite has an `x` and `y` position as well as a `width` and `height`. It also has properties like `image_speed` and `image_index` that can be used to modify how fast the image is animating and what is the current frame of the animation (in case of animated sprites). If a sprite is associated with a Game Object, it is drawn relative to that Object.

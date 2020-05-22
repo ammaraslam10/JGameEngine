@@ -122,9 +122,9 @@ class Box extends JGameEngine.Object implements JGameEngine.Collision {
         this.w = w; this.h = h;
         name = "Box";
     }
-    @Override public void start() { e.collisionMaskAdd(this, 0, 0, w/2); }
+    @Override public void start() { e.collisionMaskAdd(this, 0, 0, w, h); }
     @Override public void update() {
-        e.drawOval(x, y, w, h);
+        e.drawRect(x, y, w, h);
     }
     @Override public void collision(JGameEngine.Object with) {
         System.out.println(this.name + " is touching " + with.name);

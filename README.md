@@ -43,7 +43,7 @@ A window is a JFrame but it has additional properties. The window is updated aft
 |--|--|
 | [`void setWindow(String title, int x, int y, int width, int height)`](#) <br/> Set the window to be used. | [`void setGameSpace(int room_width, int room_height)`](#) <br/> Set the dimensions of the map. |
 | [`void windowWidth()`](#) <br/> Get the raw window width. | [`void windowHeight()`](#) <br/> Get the raw window height. |
-| [`void windowResizable(Boolean stance)`](#) <br/> Disable/enable window resizing. | [`void windowFullScreen(Boolean stance)`](#) <br/> Disable/enabe fullscreen. |
+| [`void windowResizable(Boolean stance)`](#) <br/> Disable/enable window resizing. | [`void windowFullScreen(Boolean stance)`](#) <br/> Disable/enable fullscreen. |
 
 ### Object
 Classes may be extended to `GameEngine.Object` to have the properties `x`, `y` and `name` available. Objects must implement `start()` and `update()` methods. Objects need to be added to the Game Space in order to have these methods automatically invoke on every Game Update.

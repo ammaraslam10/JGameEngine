@@ -51,3 +51,116 @@ Classes may be extended to `GameEngine.Object` to have the properties `x`, `y` a
 |--|--|
 | [`void addObject(JGameEngine.Object)`](#) <br/> Add an object to the Game Space. | [`void removeObject(JGameEngine.Object)`](#) <br/> Remove an object to the Game Space. |
 
+### Sprite
+Sprites need to be created before they are added. A sprite in this context represents an image that can be drawn. Each sprite has an `x` and `y` position as well as a `width` and `height`. It also has properties like `image_speed` and `image_index` that can be used to modify how fast the image is animating and what is the current frame of the animation (in case of animated sprites). If a sprite is associated with a Game Object, it is drawn relative to that Object.
+|   |   |
+|--|--|
+| [`Sprite sprite(String path)`](#) <br/> Return a sprite from given path. | [`Sprite sprite(JGameEngine.Object obj, String image)`](#) <br/> Return a sprite from path that is bound to the coordinates of a Game Object. |
+| [`Sprite sprite(String image, int subimages_x, int subimages_width, int subimages_y, int subimages_height)`](#) <br/> Return an animated sprite that has many images in the x, y direction, each of provided width & height. | [`Sprite sprite(Object obj, String image, int subimages_x, int subimages_width, int subimages_y, int subimages_height)`](#) <br/> Return an animated sprite bound to a Game Object that has many images in the x, y direction, each of provided width & height. |
+| [`void addSprite(JGameEngine.Sprite spr)`](#) <br/> Add a sprite to the Game Space once and have it be drawn automatically. |  [`void removeSprite(JGameEngine.Sprite spr)`](#) <br/> An added sprite can be removed |
+| [`void drawSprite(Sprite sprite)`](#) <br/> Can be called inside the `update()` of an object to have the sprite drawn every frame without adding. |
+
+### Draw
+Shapes and other drawing tools.
+|   |   |
+|--|--|
+| [`Graphics draw()`](#) <br/> Access the Graphics Object directly. |  |
+| [`Color drawColor()`](#) <br/> Get the current color. | [`void drawColor(Color c)`](#) <br/> Change the current color. |
+| [`void drawLine(double x1, double y1, double x2, double y2)`](#) <br/> Draw a line. | [`void drawOval(double x, double y, double w, double h)`](#) <br/> Draw an Oval. |
+| [`void drawRect(double x, double y, double w, double h)`](#) <br/> Draw a rectangle. | [`void drawText(String s, double x, double y)`](#) <br/> Draw text. |
+| [`double textWidth(String s)`](#) <br/> Get the width of the String. | [`double textHeight(String s)`](#) <br/> Get the height of the String.|
+| [`void textFontSystem(String name, String type, int size)`](#) <br/> Select a system font to use. | [`void textFont(String path, float size)`](#) <br/> Use the font from the given ttf file. |
+| [`void textSize(float size)`](#) <br/> Change text size. |  |
+
+### Keyboard
+There are 3 keyboard events recognized, `keyPressed` (true once when the  key is hit for the first time), `keyPressing` (true as long as key is being held down) and `keyReleased` (true once when the keyboard key stops being held). To better support readability, parameters are taken as strings.
+`A-Z` are `0-9` and special characters are recognized as themselves in strings (i.e. "A", "0", or "%"), additionally the following strings are recognized `up, down, left, right, space, tab, enter, ctrl, alt, right_click, esc`
+|   |   |
+|--|--|
+| [`boolean keyPressed(String key)`](#) <br/> Check if a key was pressed. | [`boolean keyPressing(String key)` <br/> Check if a key is being held down. |
+| [`boolean keyReleased(String key)`](#) <br/> Check if a key was released. |  |
+
+### Mouse
+Events are similar to keyboard
+|   |   |
+|--|--|
+| [`int mouseX()`](#) <br/> Get the x-coordinate of mouse. | [`int mouseX()`](#) <br/> Get the y-coordinate of mouse. |
+| [`void mouseDisableCursor()`](#) <br/> Disable the pointer. | [`boolean mouseClicked()`](#) <br/> Check if a left click occurred. |
+| [`boolean mouseRightClicked()`](#) <br/> Check if a right click occurred. | [`boolean mouseReleased()`](#) <br/> Check if left click was released. |
+| [`boolean mouseClicking()`](#) <br/> Check if left click is being clicked. | [`boolean mouseFocused()`](#) <br/> Check if mouse is inside the window. |
+
+### Camera
+For games that make use of a big map and only a part of it needs to be visible at a time, the camera is a great tool.
+|   |   |
+|--|--|
+| [`void cameraFollow(JGameEngine.Object obj)`](#) <br/> Follow an object's x, y position. |  |
+| [`double cameraX()`](#) <br/> Get the x-position of camera in the map. | [`double cameraY()`](#) <br/> Get the y-position of camera in the map. |
+| [`void cameraX(double x)`](#) <br/> Set the x-position of camera in the map. | [`void cameraY(double y)`](#) <br/> Set the y-position of camera in the map. |
+| [`double cameraWidth()`](#) <br/> Get the width of the camera in the map. | [`double cameraHeight()`](#) <br/> Get the height of the camera in the map. |
+| [`double cameraDistance()`](#) <br/> Get the distance of camera. | [`void cameraDistance(double distance)`](#) <br/> Set the distance of camera (zoom). |
+| [`boolean cameraBounded(double x, double y, double width, double height) `](#) <br/> Check if an object is visible to the Camera. |  |
+
+###  Audio
+Audio can be played. Current implementation uses Java Clip so all limitations that come from Clip are inherited, this includes not being able to play mp3 files, and not all wav files are supported as well. The pause and resume are imperfect.
+|   |   |
+|--|--|
+| [`void audioPlay(String path, boolean loop, float gain)`](#) <br/> Start playing an audio. | [`Boolean audioPlaying(String path)`](#) <br/> Check if an audio is playing. |
+| [`void audioPause(String path)`](#) <br/> Pause an audio. | [`void audioResume(String path)`](#) <br/> Resume playing an audio. |
+| [`void audioRemove(String path)`](#) <br/> Stop playing an audio & remove it's resources. |  |
+
+###  Collision
+A tool is provided to effortlessly handle collisions by taking collisions as events. An area can be masked (relative to Game Space or a Game Object). A class that extends from `JGameEngine.Object` and implements `JGameEngine.Collision` can create a collisionMask and add it to the Game Space. When something touches the Game Object after this, the implementable function `void collision(Object with)` is called. Only rectangular and circular masks are currently supported.
+Sample code:
+    
+```java
+class Box extends JGameEngine.Object implements JGameEngine.Collision {
+    JGameEngine e;
+    public int w, h;
+    public Box(JGameEngine e, int x, int y, int w, int h) {
+        this.e = e;	
+        this.x = x; this.y = y;
+        this.w = w; this.h = h;
+        name = "Box";
+    }
+    @Override public void start() { e.collisionMaskAdd(this, 0, 0, w/2); }
+    @Override public void update() {
+        e.drawOval(x, y, w, h);
+    }
+    @Override public void collision(JGameEngine.Object with) {
+        System.out.println(this.name + " is touching " + with.name);
+    }
+}
+```
+|   |   |
+|--|--|
+| [`CollisionMask collisionMaskAdd(Object obj, double x, double y, double r)`](#) <br/> Create and add a circular collision mask for the object. | [`CollisionMask collisionMaskAdd(Object obj, double x, double y, double w, double h)`](#) <br/> Create and add a rectangular collision mask for the object. |
+| [`void collisionMaskRemove(CollisionMask m)`](#) <br/> Remove a collision mask. | [`void collisionMaskDebug()`](#) <br/> Draw all masks to debug. |
+| [`ArrayList<CollisionMask> collisionPointTest(int x, int y)`](#) <br/> Return a list of masks that collided with the given point. | [`ArrayList<CollisionMask> collisionBoxTest(int x, int y, int w, int h)`](#) <br/> Return a list of masks that collided with the given rectangle. |
+
+###  Misc
+These don't belong to a category
+|   |   |
+|--|--|
+| [`int frameDelay()`](#) <br/> Get the artificial delay between each update. | [`void frameDelay(int delay)`](#) <br/> Set an artificial delay between each update. |
+| [`void setBackground(Color c)`](#) <br/> Set the background of the window. | [`double fps()`](#) <br/> Get the current FPS. |
+| [`int screenWidth()`](#) <br/> Return the screen width. | [`int screenHeight()`](#) <br/> Return the screen height. |
+| [`Color color(int r, int g, int b)`](#) <br/> Create a color from RGB. | [`Color color(int r, int g, int b, int a)`](#) <br/> Create a color from RGBA. |
+
+## Questions
+**Bugs**
+Yes there are many. Some this code is untested (new features breaking previously working features).
+
+**wHEre iS OOP?**
+For readability, all of the Object Orientation is hidden using Wrappers. This simplicity is inspired by Game Maker Studio's GML.
+
+## License
+This project is licensed under the MIT License - see the LICENSE.md file for details
+
+## Acknowledgments
+[Collisions - Quadtrees on tutsplus](https://gamedevelopment.tutsplus.com/tutorials/quick-tip-use-quadtrees-to-detect-likely-collisions-in-2d-space--gamedev-374)
+
+[Collisions - Mozilla](https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection)
+
+[Collisions - Stackoverflow](https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection)
+
+[Audio - geeksforgeeks](https://www.geeksforgeeks.org/play-audio-file-using-java/)

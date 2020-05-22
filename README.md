@@ -84,7 +84,7 @@ There are 3 keyboard events recognized, `keyPressed` (true once when the  key is
 Events are similar to keyboard
 |   |   |
 |--|--|
-| [`int mouseX()`](#) <br/> Get the x-coordinate of mouse. | [`int mouseX()`](#) <br/> Get the y-coordinate of mouse. |
+| [`int mouseX()`](#) <br/> Get the x-coordinate of mouse. | [`int mouseY()`](#) <br/> Get the y-coordinate of mouse. |
 | [`void mouseDisableCursor()`](#) <br/> Disable the pointer. | [`boolean mouseClicked()`](#) <br/> Check if a left click occurred. |
 | [`boolean mouseRightClicked()`](#) <br/> Check if a right click occurred. | [`boolean mouseReleased()`](#) <br/> Check if left click was released. |
 | [`boolean mouseClicking()`](#) <br/> Check if left click is being clicked. | [`boolean mouseFocused()`](#) <br/> Check if mouse is inside the window. |

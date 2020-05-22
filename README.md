@@ -58,6 +58,7 @@ Sprites need to be created before they are added. A sprite in this context repre
 | [`Sprite sprite(String path)`](#) <br/> Return a sprite from given path. | [`Sprite sprite(JGameEngine.Object obj, String image)`](#) <br/> Return a sprite from path that is bound to the coordinates of a Game Object. |
 | [`Sprite sprite(String image, int subimages_x, int subimages_width, int subimages_y, int subimages_height)`](#) <br/> Return an animated sprite that has many images in the x, y direction, each of provided width & height. | [`Sprite sprite(Object obj, String image, int subimages_x, int subimages_width, int subimages_y, int subimages_height)`](#) <br/> Return an animated sprite bound to a Game Object that has many images in the x, y direction, each of provided width & height. |
 | [`void addSprite(JGameEngine.Sprite spr)`](#) <br/> Add a sprite to the Game Space once and have it be drawn automatically. |  [`void removeSprite(JGameEngine.Sprite spr)`](#) <br/> An added sprite can be removed |
+| [`void spriteWidthRelative(JGameEngine.Sprite spr, double width)`](#) <br/> Change sprite width while maintaining the aspect ratio. |  [`void spriteHeightRelative(JGameEngine.Sprite spr, double height)`](#) <br/> Change sprite height while maintaining the aspect ratio. |
 | [`void drawSprite(Sprite sprite)`](#) <br/> Can be called inside the `update()` of an object to have the sprite drawn every frame without adding. |
 
 ### Draw

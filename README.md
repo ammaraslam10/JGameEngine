@@ -135,8 +135,8 @@ class Box extends JGameEngine.Object implements JGameEngine.Collision {
 class BoxTest extends JGameEngine {
     public BoxTest() {
     	this.setWindow("JGameEngine test");
-	    this.addObject(new Box(this, 0, 0, 50, 50));
-	    this.addObject(new Box(this, 20, 30, 100, 50));
+	this.addObject(new Box(this, 0, 0, 50, 50));
+	this.addObject(new Box(this, 20, 30, 100, 50));
     }
 }
 ```

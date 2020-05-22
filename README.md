@@ -109,7 +109,7 @@ Audio can be played. Current implementation uses Java Clip so all limitations th
 | [`void audioRemove(String path)`](#) <br/> Stop playing an audio & remove it's resources. |  |
 
 ###  Collision
-A tool is provided to effortlessly handle collisions by taking collisions as events. An area can be masked (relative to Game Space or a Game Object). A class that extends from `JGameEngine.Object` and implements `JGameEngine.Collision` can create a collisionMask and add it to the Game Space. When something touches the Game Object after this, the implementable function `void collision(Object with)` is called. Only rectangular and circular masks are currently supported.
+A tool is provided to effortlessly handle collisions by taking collisions as events. An area can be masked (relative to Game Space or a Game Object). A class that extends from `JGameEngine.Object` and implements `JGameEngine.Collision` can create a collisionMask and add it to the Game Space. A mask would be any area that will result in a collision, See `void collisionMaskDebug()`. When something touches the Game Object after this, the implementable function `void collision(Object with)` is called. Only rectangular and circular masks are currently supported.
 Sample code:
     
 ```java

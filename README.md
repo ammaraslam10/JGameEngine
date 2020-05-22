@@ -33,14 +33,14 @@ class dummyClock extends JGameEngine.Object {
 ```
 The above code will place current time at the center of the screen when this object is added to the game. The line that was commented in the Constructor needs to be uncommented in order for this to work.
 
-## Included tools and their methods
-Everything can be classified into the following different areas.
+## Included components and their methods
+Everything can be classified into the following different components.
 
 ### Window
 A window is a JFrame but it has additional properties. The window is updated after every `frameDelay` milliseconds. on every update, all objects in the Game Space are updated as well and the frame of the `Sprite` is updated.  A window may not see the entirety of the Game Space. This concept is discussed in Camera section.
 |   |   |
 |--|--|
-|  `void setWindow(String title, int x, int y, int width, int height)` | `void setGameSpace(int room_width, int room_height)` |
+|  [`void setWindow(String title, int x, int y, int width, int height)`](#) | `void setGameSpace(int room_width, int room_height)` |
 | `void windowWidth()` | `void windowHeight()` |
 | `void windowResizable(Boolean stance)` | `void windowFullScreen(Boolean stance)` |
 

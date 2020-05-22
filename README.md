@@ -4,7 +4,7 @@ A basic class that uses a Canvas and a JFrame but bundles in basic 2D game devel
 To develop NES/SNES styled games like Mario and The Legend of Zelda, `JTiledUtility` may be used to simplify the map creation process. It is kept as a separate utility due to its dependence on the GSon library.
 
 ## Usage
-A class may be extended to JGameEngine to initialize the components. A window needs to be added afterwards in order to have the display.
+A class may be extended to JGameEngine to initialize the components. A window needs to be added afterwards in order to have the display. Without `setWindow()`, no window will appear.
 
 ```java
 class ClockTest extends JGameEngine {
@@ -32,7 +32,7 @@ class dummyClock extends JGameEngine.Object {
     @Override public void start() { }
 }
 ```
-The above code will place current time at the center of the screen when this object is added to the game. The line that was commented in the Constructor needs to be uncommented in order for this to work.
+The above code will place current time at the center of the screen when this object is added to the game. After the creation of a game object, it needs to be added to the game (or Game Space), this is done by `addObject()`. The line that was commented in the Constructor needs to be uncommented in order for this to work. 
 
 ## Included components and their methods
 Everything can be classified into the following different components.

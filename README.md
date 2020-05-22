@@ -148,7 +148,7 @@ These don't belong to a category
 
 ## Questions
 **Bugs**
-Yes there are many. Some this code is untested (new features breaking previously working features).
+Yes there are many. Some of this code is untested (new features breaking previously working features).
 
 **wHEre iS OOP?**
 For readability, all of the Object Orientation is hidden using Wrappers. This simplicity is inspired by Game Maker Studio's GML.

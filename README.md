@@ -77,7 +77,7 @@ There are 3 keyboard events recognized, `keyPressed` (true once when the  key is
 `A-Z` are `0-9` and special characters are recognized as themselves in strings (i.e. "A", "0", or "%"), additionally the following strings are recognized `up, down, left, right, space, tab, enter, ctrl, alt, right_click, esc`
 |   |   |
 |--|--|
-| [`boolean keyPressed(String key)`](#) <br/> Check if a key was pressed. | [`boolean keyPressing(String key)` <br/> Check if a key is being held down. |
+| [`boolean keyPressed(String key)`](#) <br/> Check if a key was pressed. | [`boolean keyPressing(String key)`](#) <br/> Check if a key is being held down. |
 | [`boolean keyReleased(String key)`](#) <br/> Check if a key was released. |  |
 
 ### Mouse
@@ -155,6 +155,10 @@ For readability, all of the Object Orientation is hidden using Wrappers. This si
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.md file for details
+
+## Contributors
+Ammar Aslam <br/>
+Anzar Ahmad
 
 ## Acknowledgments
 [Collisions - Quadtrees on tutsplus](https://gamedevelopment.tutsplus.com/tutorials/quick-tip-use-quadtrees-to-detect-likely-collisions-in-2d-space--gamedev-374)

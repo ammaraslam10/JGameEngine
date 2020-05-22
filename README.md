@@ -127,7 +127,9 @@ class Box extends JGameEngine.Object implements JGameEngine.Collision {
         this.width = width; this.height = height;
         name = "Box";
     }
-    @Override public void start() { e.collisionMaskAdd(this, 0, 0, width, height); }
+    @Override public void start() {
+        e.collisionMaskAdd(this, 0, 0, width, height); 
+    }
     @Override public void update() {
         e.drawRect(x, y, width, height);
     }
@@ -140,6 +142,9 @@ class BoxTest extends JGameEngine {
     	this.setWindow("JGameEngine test");
 	this.addObject(new Box(this, 0, 0, 50, 50));
 	this.addObject(new Box(this, 20, 30, 100, 50));
+    }
+    public static void main(String[] args) {
+	BoxTest c = new BoxTest();
     }
 }
 ```

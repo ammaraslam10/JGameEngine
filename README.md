@@ -110,25 +110,33 @@ Audio can be played. Current implementation uses Java Clip so all limitations th
 | [`void audioRemove(String path)`](#) <br/> Stop playing an audio & remove it's resources. |  |
 
 ###  Collision
-A tool is provided to effortlessly handle collisions by taking collisions as events. An area can be masked (relative to Game Space or a Game Object). A class that extends from `JGameEngine.Object` and implements `JGameEngine.Collision` can create a collisionMask and add it to the Game Space. A mask would be any area that will result in a collision, See `void collisionMaskDebug()`. When something touches the Game Object after this, the implementable function `void collision(Object with)` is called. Only rectangular and circular masks are currently supported.
+A tool is provided to effortlessly handle collisions by taking collisions as events. An area can be masked (relative to Game Space or a Game Object). A class that extends from `JGameEngine.Object` and implements `JGameEngine.Collision` can create a collisionMask and add it to the Game Space. A mask would be any area that will result in a collision, See `void collisionMaskDebug()`. The x, y position of a mask is ralative to the object it is attached to.. As the object moves, the mask will move. When something touches the Game Object after when a mask is added, the implementable function `void collision(Object with)` is called. Only rectangular and circular masks are currently supported.
 Sample code:
     
 ```java
 class Box extends JGameEngine.Object implements JGameEngine.Collision {
     JGameEngine e;
-    public int w, h;
-    public Box(JGameEngine e, int x, int y, int w, int h) {
+    public int width, height;
+    // Properties x, y and name are inherited.
+    public Box(JGameEngine e, int x, int y, int width, int height) {
         this.e = e;	
         this.x = x; this.y = y;
-        this.w = w; this.h = h;
+        this.width = width; this.height = height;
         name = "Box";
     }
-    @Override public void start() { e.collisionMaskAdd(this, 0, 0, w, h); }
+    @Override public void start() { e.collisionMaskAdd(this, 0, 0, width, height); }
     @Override public void update() {
-        e.drawRect(x, y, w, h);
+        e.drawRect(x, y, width, height);
     }
     @Override public void collision(JGameEngine.Object with) {
         System.out.println(this.name + " is touching " + with.name);
+    }
+}
+class BoxTest extends JGameEngine {
+    public BoxTest() {
+    	this.setWindow("JGameEngine test");
+	    this.addObject(new Box(this, 0, 0, 50, 50));
+	    this.addObject(new Box(this, 20, 30, 100, 50));
     }
 }
 ```

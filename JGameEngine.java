@@ -271,7 +271,8 @@ public class JGameEngine {
        public Sprite(String image) {
 	    try { 
 		img = new BufferedImage[1];
-		img[0] = ImageIO.read(new File(image));      
+		img[0] = ImageIO.read(new File(image));   
+		width = img[0].getWidth(); height = img[0].getHeight();
 	    } catch (IOException ex) { }
 	}
 	public Sprite(Object ob, String image) { this(image); obj = ob; x = 0; y = 0; }
@@ -295,7 +296,7 @@ public class JGameEngine {
 	}
 	public Sprite(Object ob, String image, int subimages_x, int subimages_width, int subimages_y, int subimages_height) { this(image, subimages_x, subimages_width, subimages_y, subimages_height); obj = ob; x = 0; y = 0; }
 	private void draw(Sprite sprite, Graphics g) {
-	    double draw_x = x, draw_y = y, check_x = y, check_y = y;
+	    double draw_x = x, draw_y = y, check_x = x, check_y = y;
 	    if(obj != null) {
 		draw_x += obj.x; draw_y += obj.y;
 		check_x += obj.x; check_y += obj.y;

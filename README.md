@@ -12,6 +12,9 @@ class ClockTest extends JGameEngine {
         this.setWindow("JGameEngine test");
         // this.addObject(new dummyClock(this));
     }
+    public static void main(String[] args) {
+	ClockTest c = new ClockTest();
+    }
 }
 ```
 Writing this much code is enough to produce a window with the given String as the title. 

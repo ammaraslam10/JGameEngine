@@ -1,5 +1,5 @@
 // This is a sample of how it can be used
-public class Driver extends JGameEngine {
+public class Driver {
     public static void main(String[] args) {
 	ClockTest c = new ClockTest();		
     }

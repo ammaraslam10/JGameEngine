@@ -352,6 +352,10 @@ public class JGameEngine {
     void addSprite(JGameEngine.Sprite spr) { window.sprite_queue.add(spr);  }
     /** Remove a sprite from the game space. This may be done once before deletion. Once a sprite is deleted it will no longer be drawn. See addSprite() */
     void removeSprite(JGameEngine.Sprite spr) { window.sprite_queue_r.add(spr); }
+    /** Update sprite width but respect the aspect ratio */
+    void spriteWidthRelative(Sprite sprite, double width) { sprite.height *= width/sprite.width; sprite.width = width; }
+    /** Update sprite height but respect the aspect ratio */
+    void spriteHeightRelative(Sprite sprite, double height) { sprite.width *= height/sprite.height; sprite.height = height; }
     //~~~~~~~~~~ Sprite Managment Ends
 
     //~~~~~~~~~~ Keyboard Input Managment

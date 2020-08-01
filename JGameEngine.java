@@ -159,6 +159,7 @@ public class JGameEngine {
 		}
 	    });
 	    gameThread = new Thread( this );
+		this.requestFocus();
 	    gameThread.start();
 	}
 	@Override

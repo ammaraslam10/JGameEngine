@@ -175,7 +175,8 @@ This project is licensed under the MIT License - see the LICENSE.md file for det
 
 ## Contributors
 Ammar Aslam <br/>
-Anzar Ahmad
+Anzar Ahmad <br/>
+Hasaan Majeed
 
 ## Acknowledgments
 [Collisions - Quadtrees on tutsplus](https://gamedevelopment.tutsplus.com/tutorials/quick-tip-use-quadtrees-to-detect-likely-collisions-in-2d-space--gamedev-374)

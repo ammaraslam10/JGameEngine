@@ -2,7 +2,7 @@
 
 # JGameEngine
 A basic class that uses a Canvas and a JFrame but bundles in basic 2D game development tools.
-To develop NES/SNES styled games like Mario and The Legend of Zelda, [JTiledUtility](https://github.com/ammaraslam10/JTiledUtility) may be used to simplify the map creation process. It is kept as a separate utility due to its dependence on the GSon library. Here's a [Demo Game](https://github.com/ammaraslam10/Minacre-JGameEngine-Game).
+To develop NES/SNES styled games like Mario and The Legend of Zelda, [JTiledUtility](https://github.com/ammaraslam10/JTiledUtility) may be used to simplify the map creation process. It is kept as a separate utility due to its dependence on the GSon library. Here's a [Demo Game](https://github.com/ammaraslam10/Minacre-JGameEngine-Game). The detailed documentation is present at the [Wiki](https://github.com/ammaraslam10/JGameEngine/wiki/Getting-Started).
 
 ## Usage
 A class may be extended to JGameEngine to initialize the components. A window needs to be added afterwards in order to have the display. Without `setWindow()`, no window will appear.

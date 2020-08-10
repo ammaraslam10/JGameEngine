@@ -20,12 +20,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /*
@@ -48,6 +51,7 @@ public class JGameEngine {
     private JGameEngine.Camera camera;
     private JGameEngine.Quadtree collisionTree;
     private JGameEngine.Audios audios;
+    private JGameEngine.Fonts fonts;
     
     // Initialize JGameEngine
     public JGameEngine() {
@@ -56,6 +60,7 @@ public class JGameEngine {
 	mouse = new JGameEngine.Mouse();
 	camera = new JGameEngine.Camera();
 	audios = new JGameEngine.Audios();
+	fonts = new JGameEngine.Fonts();
 	collisionTree = null;
 	deltaTime = 0;
 	frameDelay = 0;
@@ -66,10 +71,19 @@ public class JGameEngine {
     void frameDelay(int delay) { frameDelay = delay; }
     /** Set a game space. Clears out all objects and sprites and prepares a room with the given size for collisions. It is the logical boundary of the Game Area */
     void setGameSpace(int room_width, int room_height) {
+	if(window != null) {
+	    window.game_loop_can_run = false;
+	    while(window.game_loop_running) {}
+	}	
+	if(collisionTree != null) collisionTree.clear();
     	collisionTree = new JGameEngine.Quadtree(0, new Rectangle(room_width, room_height));
 	if(window != null) {
 	    window.objects.clear(); window.object_queue.clear(); window.object_queue_r.clear();
-	    window.sprites.clear(); window.sprite_queue.clear(); window.sprite_queue_r.clear(); }
+	    window.sprites.clear(); window.sprite_queue.clear(); window.sprite_queue_r.clear(); 
+	    audios = new JGameEngine.Audios();
+	    fonts = new JGameEngine.Fonts();
+	    window.game_loop_can_run = true;
+	}	
     }
     /** Actual window on the screen with positions x, y and dimensions width, height */
     void setWindow(String title, int x, int y, int width, int height) {
@@ -102,6 +116,8 @@ public class JGameEngine {
     public int windowWidth() { return window.canvas.getSize().width; }
     /** Get the window height. This is a raw value, See cameraHeight() for a more useful value. */
     public int windowHeight() { return window.canvas.getSize().height; }
+    /** Set window icon */
+    public void windowIcon(String file) { ImageIcon img = new ImageIcon(file); window.setIconImage(img.getImage()); } 
     /** Set if the window is resizable by user */
     public void windowResizable(boolean stance) { window.setResizable(stance); }
     /** Set window to full screen or make it windowed */
@@ -124,11 +140,12 @@ public class JGameEngine {
 	private ArrayList<JGameEngine.Object> objects, object_queue, object_queue_r;
 	private ArrayList<JGameEngine.Sprite> sprites, sprite_queue, sprite_queue_r;
 	private BufferStrategy bs;
-	private volatile boolean running;
+	private volatile boolean running; volatile boolean game_loop_can_run = true; volatile boolean game_loop_running;
 	private Thread gameThread;
 	private Graphics g = null;
 	private long last_time = System.currentTimeMillis();
 	private Canvas canvas;
+	private double garbage_time;
 	int x, y, width, height;
 	public Window(String title, int x, int y, int width, int height) {
 	    canvas = new Canvas();
@@ -146,6 +163,7 @@ public class JGameEngine {
 	    setTitle( title );
 	    setIgnoreRepaint( true );
 	    addKeyListener(keyboard);
+	    canvas.addKeyListener(keyboard);
 	    this.setResizable(false);
 	    
 	    pack();
@@ -153,26 +171,39 @@ public class JGameEngine {
 	    canvas.createBufferStrategy( 2 );
 	    bs = canvas.getBufferStrategy();
 	    canvas.addMouseListener(mouse);
+	    requestFocus();
 	    addComponentListener(new ComponentAdapter() {  // Update canvas size on window resize
 		@Override public void componentResized(ComponentEvent evt) {
 		    canvas.setSize(getWidth(), getHeight());
 		}
 	    });
 	    gameThread = new Thread( this );
-		this.requestFocus();
 	    gameThread.start();
 	}
 	@Override
 	public void run() {
 	    running = true;
-	    if(collisionTree == null) { String err = "No Game Space is set! use setGameSpace()"; try { throw new Exception(err); } catch(Exception e) { System.out.println(err); } }
+	    if(collisionTree == null) { String err = "JGameEngine::Window No Game Space is set! use setGameSpace()"; try { throw new Exception(err); } catch(Exception e) { System.out.println(err); } }
 	    while( running ) {
 		// Calculate time since last thread run as deltaTime => deltaTime can be used to
-		// implement framerate independant code
+		// implement framerate independant code		
 		long current_time = System.currentTimeMillis();
 		deltaTime = (current_time - last_time)/100f;
 		last_time = current_time;
-		gameLoop();
+		
+		// A different thread might be trying to safely clear objects
+		if(game_loop_can_run) {
+		    game_loop_running = true;
+		    gameLoop();
+		}
+		game_loop_running = false;
+		
+		// After ~10 seconds, call the garbage collector
+		garbage_time += deltaTime;
+		if(garbage_time > 100) {
+		    System.gc(); 
+		    garbage_time = 0;
+		}
 	    }
 	}
 	private void gameLoop() {
@@ -207,7 +238,7 @@ public class JGameEngine {
 	    while(!sprite_queue.isEmpty()) { sprites.add(sprite_queue.remove(0)); } while(!sprite_queue_r.isEmpty()) { sprites.remove(sprite_queue_r.remove(0)); }
 	    collisionTree.runCollisions();
 	    for(JGameEngine.Object o : objects) {
-		o.preUpdate();
+		//o.preUpdate(); Might have a use later
 		o.update();
 	    }
 	    for(JGameEngine.Sprite s : sprites) {
@@ -235,22 +266,38 @@ public class JGameEngine {
        public abstract void start();
        /** This function is called on every update cycle of the game. Also see deltaTime() */
        public abstract void update();
-       private void preUpdate() {
+       /*private void preUpdate() {
 	   // Current implementation never supported a preUpdate() so keeping this felt like a waste
 	   // If there are additional object properties to invoke, do that before update (colliders etc)
-	   // for(WrapCall c : calls) {
-	   //	c.call();
-	   // }
-       }
+	   for(WrapCall c : calls) {
+	   	c.call();
+	   }
+       }*/
     }
     /** Place a game object in current space, start() is called immediately. Object is added in next cycle */
-    void addObject(JGameEngine.Object obj) {	
+    void objectAdd(JGameEngine.Object obj) {	
 	obj.start(); // Initialize object
 	window.object_queue.add(obj);
     }
     /** Remove a game object from current space, Object is removed in next cycle */
-    void removeObject(JGameEngine.Object obj) {
+    void objectRemove(JGameEngine.Object obj) {
 	window.object_queue_r.add(obj);
+    }
+    /** Find a game object from the current space by reference */
+    List<JGameEngine.Object> objectList(JGameEngine.Object obj) {
+	List<JGameEngine.Object> l = new ArrayList<>();
+	for(int i = 0; i < window.objects.size(); i++)
+	    if(window.objects.get(i) == obj)
+		l.add(window.objects.get(i));
+	return l;
+    }
+    /** Find a game object from the current space by name */
+    List<JGameEngine.Object> objectsFind(String name) {
+	List<JGameEngine.Object> l = new ArrayList<>();
+	for(int i = 0; i < window.objects.size(); i++)
+	    if(window.objects.get(i).name.equals(name))
+		l.add(window.objects.get(i));
+	return l;
     }
     //~~~~~~~~~~ Game Object Managment Ends
 
@@ -260,7 +307,7 @@ public class JGameEngine {
        /** The x-position in the game space */		double x = 0; 
        /** The y-position in the game space */		double y = 0;
        /** The width of the sprite	    */		double width = 0; 
-       /** The height of the sprite	     */		double height = 0;
+       /** The height of the sprite	    */		double height = 0;
        /** The speed at which the animation cycles */	double image_speed = 0;
        /** The frame of the sprite animation */		int image_index = 0;
        private JGameEngine.Object obj = null;
@@ -272,16 +319,17 @@ public class JGameEngine {
        public Sprite(String image) {
 	    try { 
 		img = new BufferedImage[1];
-		img[0] = ImageIO.read(new File(image));   
-		width = img[0].getWidth(); height = img[0].getHeight();
-	    } catch (IOException ex) { }
+		img[0] = ImageIO.read(new File(image));      
+	        width = img[0].getWidth(); height = img[0].getHeight();
+		x = 0; y = 0;
+	    } catch (IOException ex) { System.out.println("JGameEngine::Sprite() Unable to open image (" + image + ")"); }
 	}
 	public Sprite(Object ob, String image) { this(image); obj = ob; x = 0; y = 0; }
 	public Sprite(String image, int subimages_x, int subimages_width, int subimages_y, int subimages_height) {
 	    this.subimages_x = subimages_x; this.subimages_y = subimages_y;
 	    this.subimages_width = subimages_width; this.subimages_height = subimages_height;
 	    BufferedImage tmp = null;
-	    try { tmp = ImageIO.read(new File(image)); } catch (IOException ex) { System.out.println("Sprite:: Unable to open image " + image); }
+	    try { tmp = ImageIO.read(new File(image)); } catch (IOException ex) { System.out.println("JGameEngine::Sprite() Unable to open image  (" + image + ")"); }
 	    if(subimages_x > 0 && subimages_y > 0) {
 		img =  new BufferedImage[subimages_x * subimages_y];
 		for(int i = 0; i < subimages_x; i++) {
@@ -307,11 +355,11 @@ public class JGameEngine {
 	    if(sprite.subimages_x == 0 || sprite.subimages_y == 0) {
 		sprite.image_index = 0;
 		if(!cameraBounded(check_x, check_y, w, h)) return;
-		g.drawImage(sprite.img[sprite.image_index], (int) (draw_x * camera.d), (int) (draw_y * camera.d), (int) (w * camera.d), (int) (h * camera.d), null);
+		g.drawImage(sprite.img[sprite.image_index], (int) Math.round(draw_x * camera.d), (int) Math.round(draw_y * camera.d), (int) Math.round(w * camera.d), (int) Math.round(h * camera.d), null);
 		return;
 	    }
 	    if(!cameraBounded(check_x, check_y, w, h)) return;
-	    g.drawImage(sprite.img[sprite.image_index], (int) (draw_x * camera.d), (int) (draw_y * camera.d), (int) (w * camera.d), (int) (h * camera.d), null);
+	    g.drawImage(sprite.img[sprite.image_index], (int) Math.round(draw_x * camera.d), (int) Math.round(draw_y * camera.d), (int) Math.round(w * camera.d), (int) Math.round(h * camera.d), null);
 
 	    // Runs after about 1ms under frameDelay of 128. Can't keep up well afterwards. 
 	    current_count_speed += image_speed * deltaTime;
@@ -348,11 +396,11 @@ public class JGameEngine {
      * @return A Sprite */
     public Sprite sprite(Object obj, String image, int subimages_x, int subimages_width, int subimages_y, int subimages_height) { return new Sprite(obj, image, subimages_x, subimages_width, subimages_y, subimages_height); }
     /** Draw a sprite */
-    public void drawSprite(Sprite sprite) { sprite.draw(sprite, window.g); }
+    public void spriteDraw(Sprite sprite) { sprite.draw(sprite, window.g); }
     /** Add a sprite to the game space. This may be done once in start() of your game object. Once a sprite is added it will keep being drawn until its removed */
-    void addSprite(JGameEngine.Sprite spr) { window.sprite_queue.add(spr);  }
+    void spriteAdd(JGameEngine.Sprite spr) { window.sprite_queue.add(spr);  }
     /** Remove a sprite from the game space. This may be done once before deletion. Once a sprite is deleted it will no longer be drawn. See addSprite() */
-    void removeSprite(JGameEngine.Sprite spr) { window.sprite_queue_r.add(spr); }
+    void spriteRemove(JGameEngine.Sprite spr) { window.sprite_queue_r.add(spr); }
     /** Update sprite width but respect the aspect ratio */
     void spriteWidthRelative(Sprite sprite, double width) { sprite.height *= width/sprite.width; sprite.width = width; }
     /** Update sprite height but respect the aspect ratio */
@@ -363,11 +411,13 @@ public class JGameEngine {
     // Keylistener for the window
     private class Key implements KeyListener {
 	// Single press, Single Release, Button held down
-	private volatile boolean[] pressed, released, pressing;
+	private volatile boolean[] pressed, released, pressing, pressed_act, released_act;
 	private volatile boolean allow_remove_pressed = false, allow_remove_released = false;
 	Key() {
 	    pressed = new boolean[118];
 	    released = new boolean[118];
+	    //pressed_act = new boolean[118]; TODO: Fix multi key registeration
+	    //released_act = new boolean[118];
 	    pressing = new boolean[118];
 	    for(int i = 0; i < 118; i++) {
 		pressed[i] = false;
@@ -379,16 +429,16 @@ public class JGameEngine {
 	@Override public void keyPressed(KeyEvent e) { allow_remove_pressed = false; if(!pressing[e.getKeyCode()]) pressed[e.getKeyCode()] = true; pressing[e.getKeyCode()] = true; }
 	@Override public void keyReleased(KeyEvent e) { allow_remove_released = false; released[e.getKeyCode()] = true; pressing[e.getKeyCode()] = false; }
 	private synchronized void removePressed() { 
-	    for(int i = 0; i < 118; i++) pressed[i] = false; 
+	    for(int i = 0; i < 118; i++) { /*pressed_act[i] = pressed[i];*/ pressed[i] = false; }
 	}
 	private synchronized void removeReleased() {
-	    for(int i = 0; i < 118; i++) released[i] = false; 
+	    for(int i = 0; i < 118; i++) { /*released_act[i] = released[i];*/ released[i] = false; }
 	}
-    }    
+    }        
     // Helper to convert english to key codes 
     private int key_code(String key) {
 	if(key.length() == 1) {
-	    return key.charAt(0);
+	    return KeyStroke.getKeyStroke(key.toUpperCase().charAt(0), 0).getKeyCode();
 	}
 	else if("up".equals(key)) return 38; else if("down".equals(key)) return 40; else if ("left".equals(key)) return 37;
 	else if("right".equals(key)) return 39; else if("space".equals(key)) return 32; else if("tab".equals(key)) return 9;
@@ -495,6 +545,7 @@ public class JGameEngine {
      The camera may also be zoomed in and out as required. The camera is a game object which is added to the Game Space when it is set to follow a Game Object. */
     public class Camera extends Object {
 	private Object following;
+	private double offset_x, offset_y;
 	private double d; /* distance */
 	public Camera() {
 	    d = 1;
@@ -503,8 +554,8 @@ public class JGameEngine {
 	@Override public void start() { }
 	@Override public void update() {
 	    if(following != null) {
-		x = following.x;
-		y = following.y;
+		x = following.x + offset_x;
+		y = following.y + offset_y;
 	    }
 	}
     }
@@ -512,9 +563,13 @@ public class JGameEngine {
     void cameraFollow(JGameEngine.Object obj) {
 	camera.following = obj;
 	if(obj != null)
-	    addObject(camera);
+	    objectAdd(camera);
 	else 
-	    removeObject(camera);
+	    objectRemove(camera);
+    }
+    /** Set the camera to follow a Game Object at distance x, y from the object */
+    void cameraFollow(JGameEngine.Object obj, double x, double y) {
+	cameraFollow(obj); camera.offset_x = x; camera.offset_y = y;
     }
     /** Get the camera's x-coordinate in the Game Space. It may be useful to position UI elements at the position of the camera so that the UI follows the camera */ 
     public double cameraX() { return camera.x; } 
@@ -545,11 +600,37 @@ public class JGameEngine {
     } 
     //~~~~~~~~~~ Camera Ends
 
-    //~~~~~~~~~~ Draw
-    /** Directly access the Graphics. This is not recommended as objects drawn from this will always be in the Camera Space (May be avoided if CameraX, CameraY, CameraDistance is used) */
-    public Graphics draw() {
-	return window.g;
+    //~~~~~~~~~~ Fonts 
+    private class Fonts {
+	ArrayList<String> name;
+	ArrayList<Font> font;
+	public Fonts() {
+	    name = new ArrayList<>();
+	    font = new ArrayList<>();
+	}
+	private void addFont(String name, Font font) {
+	    if(getFont(name) != -1) return;
+	    this.name.add(name);
+	    this.font.add(font);
+	}
+	private void addFont(Font f) { 
+	    if(getFont(f) != -1) return;
+	    this.name.add(f.getFontName()+"~"+((float)f.getSize()));
+	    this.font.add(f);
+	}
+	private int getFont(String name) {
+	    for(int i = 0; i < this.name.size(); i++) if(this.name.get(i).equals(name)) return i;	
+	    return -1;
+	}
+	private int getFont(Font ft) {
+	    for(int i = 0; i < this.font.size(); i++) if(this.font.get(i).equals(ft)) return i;	
+	    return -1;
+	}
     }
+    //~~~~~~~~~~ Fonts Ends
+    //~~~~~~~~~~ Draw
+    /** Directly access the Graphics Object. This is not recommended as objects drawn from this will always be in the Camera Space (May be avoided if CameraX, CameraY, CameraDistance is used) */
+    public Graphics draw() { return window.g; }
     /** Get the colour that the Graphics Object will use */ 
     public Color drawColor() { return draw().getColor(); } 
     /** Set the colour that the Graphics Object will use */ 
@@ -571,8 +652,7 @@ public class JGameEngine {
     }
     /** Draw text */ 
     public void drawText(String s, double x, double y) { 
-	window.g.setFont(window.g.getFont().deriveFont(window.g.getFont().getSize() * (float) camera.d));
-	if(cameraBounded(x,y,textWidth(s),textHeight(s))) { x = cameraCoordX(x); y = cameraCoordY(y);
+    	if(cameraBounded(x,y,textWidth(s),textHeight(s))) { x = cameraCoordX(x); y = cameraCoordY(y);
 	    draw().drawString(s, (int) (x * camera.d), (int) (y * camera.d)); }
     }
     /** Draw a line */ 
@@ -588,14 +668,29 @@ public class JGameEngine {
     /** Get the height of a text */ 
     public double textHeight(String s) { return draw().getFontMetrics().getStringBounds(s, draw()).getHeight(); }
     /** Change the font of text to a system font. Type can be changed to "italic" and "bold", otherwise it will be normal. 3rd parameter is font size */  
-    public void textFontSystem(String name, String type, int size) { int t = Font.PLAIN; if(type.equals("bold")) t = Font.BOLD; else if(type.equals("italic")) t = Font.ITALIC; draw().setFont(new Font(name, t, size)); }
+    public void textFontSystem(String name, String type, int size) { 	
+	type = type.toLowerCase(); 
+	int i = fonts.getFont(name+type+"~"+size); if(i != -1) { draw().setFont(fonts.font.get(i)); return; }
+	int t = Font.PLAIN; if(type.equals("bold")) t = Font.BOLD; else if(type.equals("italic")) t = Font.ITALIC; 
+	draw().setFont(new Font(name, t, size * (int) camera.d)); 
+	fonts.addFont(name+type+"~"+size, draw().getFont()); }
     /** Change the font of text to a custom font from a given file, ttf format supported only. */  
-    public void textFont(String path, float size) { 
-	try { Font font = Font.createFont(Font.TRUETYPE_FONT, new File(path)); draw().setFont(font.deriveFont(size)); }
-	catch(Exception e) { System.out.println("textFont() font " + path + " can't be set. details: " + e.toString()); }
+    public Font textFontCreate(String path, float size) { 
+	int i = fonts.getFont(path+"~"+size); if(i != -1) return fonts.font.get(i); Font font = null;
+	try { font = Font.createFont(Font.TRUETYPE_FONT, new File(path)); font = font.deriveFont(size * (float) camera.d); }
+	catch(Exception e) { System.out.println("JGameEngine::textFont() font " + path + " can't be set. details: " + e.toString()); }
+	if(font != null) fonts.addFont(path+"~"+size, font);
+	return font;
     }
+    /** Change the current font */
+    public void textFont(Font font) { fonts.addFont(font); draw().setFont(font); }
+    /** Change the current font */
+    public void textFont(String path, float size) { draw().setFont(textFontCreate(path, size)); }
     /** Change the font size */
-    public void textSize(float size) { draw().setFont(draw().getFont().deriveFont(size)); }
+    public void textSize(float size) { int i = fonts.getFont(draw().getFont().getName()+"~"+size);
+	if(i != -1) { draw().setFont(fonts.font.get(i)); return; } Font f = draw().getFont().deriveFont(size); 
+	fonts.addFont(f); draw().setFont(f); 
+    }
     /** Draw an filled oval of colour c */ 
     public void drawOval(double x, double y, double w, double h, Color c, Boolean fill) { Color t = draw().getColor(); draw().setColor(c); 
 	if(fill && cameraBounded(x,y,w,h)) { x = cameraCoordX(x); y = cameraCoordY(y);
@@ -614,7 +709,7 @@ public class JGameEngine {
     private class Quadtree {
 	private int MAX_OBJECTS = 10, MAX_LEVELS = 5;
 	private int level;
-	private ArrayList<CollisionMask> objects, objects_a, objects_r;
+	ArrayList<CollisionMask> objects, objects_a, objects_r;
 	private Rectangle bounds;
 	private Quadtree[] nodes;
 	public Quadtree(int pLevel, Rectangle pBounds) {
@@ -622,7 +717,7 @@ public class JGameEngine {
 	    bounds = pBounds; nodes = new Quadtree[4];   objects_a = new ArrayList();
 	}
 	private void clear() {
-	    objects.clear();
+	    objects.clear(); objects_a.clear(); objects_r.clear();
 	    for (int i = 0; i < nodes.length; i++) {
 		if (nodes[i] != null) nodes[i].clear();
 		nodes[i] = null;
@@ -702,17 +797,35 @@ public class JGameEngine {
 	    }
 	}
     }
-    private class CollisionMask {
-	char type;
-	double x, y, w, h;
-	Object o = null; Collision c = null;
-	public CollisionMask(Object obj, Collision col, double x, double y, double r) {
+    /** A CollisionMask is the area in which the Collision is effectively applied. A class that implements
+     Collision can use the CollisionMaskAdd() method of JGameEngine to add a collision mask */
+    public class CollisionMask {
+	private char type;
+	private double x, y, w, h;
+	/** Object to which the collision mask is attached */
+	Object o = null; 
+	private Collision c = null;
+	private CollisionMask(Object obj, Collision col, double x, double y, double r) {
 	    o = obj; c = col; this.x = x; this.y = y; this.w = r; this.h = r; this.type = 1;
 	}
-	public CollisionMask(Object obj, Collision col, double x, double y, double w, double h) {
+	private CollisionMask(Object obj, Collision col, double x, double y, double w, double h) {
 	    o = obj; c = col; this.x = x; this.y = y; this.w = w; this.h = h; this.type = 0;
 	}
-	public boolean check(CollisionMask c1, CollisionMask c2) {
+	/** Get the X position of mask */
+	public double getX() { if(o != null) return x + o.x; return x; } 
+	/** Get the Y position of mask */
+	public double getY() { if(o != null) return y + o.y; return y; }
+	/** Get the width of mask */
+	public double getWidth() { return w; } 
+	/** Get the height of mask */
+	public double getHeight() { return h; }
+	/** Draw the collision mask for debugging purposes */
+	public void debug() {
+	    CollisionMask m = this.realBounds();
+	    if(m.type == 0) { drawRect(m.x, m.y, m.w, m.h); }
+	    else if(m.type == 1) { drawOval(m.x, m.y, m.w * 2, m.w * 2); }	    
+	}
+	private boolean check(CollisionMask c1, CollisionMask c2) {
 	    // https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection & https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
 	    if(c1.type == 0 && c2.type == 0) {		
 		if (c1.x < c2.x + c2.w &&
@@ -738,9 +851,9 @@ public class JGameEngine {
 	    return false;
 	}
 	/** Get real bounds in rectangle form */
-	Rectangle realBoundsRect() { CollisionMask tmp = realBounds(); return new Rectangle((int) tmp.x, (int) tmp.y, (int) tmp.w, (int) tmp.h); }
+	private Rectangle realBoundsRect() { CollisionMask tmp = realBounds(); return new Rectangle((int) tmp.x, (int) tmp.y, (int) tmp.w, (int) tmp.h); }
 	/** Get real bounds (relative to position of object) */
-	CollisionMask realBounds() {
+	private CollisionMask realBounds() {
 	    if(o == null) return this;
 	    CollisionMask tmp = new CollisionMask(o, c, x, y, w, h); tmp.type = type;
 	    tmp.x += o.x; tmp.y += o.y;
@@ -756,7 +869,7 @@ public class JGameEngine {
 	    m = new CollisionMask(obj, (Collision) obj, x, y, r);
 	    collisionTree.add(m);
 	} else {
-	    String err = "Trying to add a Collision Mask to an Object that doesn't implement Collsions (Add implements Collision to your Object Class)"; try{ throw new Exception(err); }
+	    String err = "JGameEngine::CollisionMaskAdd() Trying to add a Collision Mask to an Object that doesn't implement Collsions. (Class "+obj.getClass().getName()+" must implement JGameEngine.Collision)"; try{ throw new Exception(err); }
 	    catch(Exception e) { System.out.println(err); }
 	}    
 	return m;
@@ -768,14 +881,31 @@ public class JGameEngine {
 	    m = new CollisionMask(obj, (Collision) obj, x, y, w, h);
 	    collisionTree.add(m);
 	} else {
-	    String err = "Trying to add a Collision Mask to an Object that doesn't implement Collsions (Add implements Collision to your Object Class)"; try{ throw new Exception(err); }
+	    String err = "JGameEngine::CollisionMaskAdd() Trying to add a Collision Mask to an Object that doesn't implement Collsions. (Class "+obj.getClass().getName()+" must implement JGameEngine.Collision)"; try{ throw new Exception(err); }
 	    catch(Exception e) { System.out.println(err); }
 	}
 	return m;
     }
+    /** Search through the list of all collision masks in the room to find masks that belong to the object */
+    List<CollisionMask> collisionMaskList(Object obj) {
+	ArrayList<CollisionMask> ret = new ArrayList<>();
+	for(int i = 0; i < collisionTree.objects.size(); i++) {
+	    if(collisionTree.objects.get(i).o == obj) ret.add(collisionTree.objects.get(i));
+	}
+	for(int i = 0; i < collisionTree.objects_a.size(); i++) {
+	    if(collisionTree.objects_a.get(i).o == obj) ret.add(collisionTree.objects_a.get(i));
+	}
+	return ret;
+    }
     /** Remove the collision mask */
     void collisionMaskRemove(CollisionMask m) {
 	collisionTree.remove(m);
+    }
+    /** Remove all of the collision mask of an object */
+    void collisionMaskRemove(JGameEngine.Object o) {
+	ArrayList<CollisionMask> m = (ArrayList) collisionMaskList(o);
+	for(int i = 0; i < m.size(); i++)
+	    collisionTree.remove(m.get(i));
     }
     /** Draw all collision masks */
     void collisionMaskDebug() {
@@ -786,17 +916,17 @@ public class JGameEngine {
 	}
     }
     /** Get the list of objects that are collide to the given point */
-    ArrayList<CollisionMask> collisionPointTest(int x, int y) {
+    List<CollisionMask> collisionPointTest(double x, double y) {
 	return collisionBoxTest(x,y,1,1);
     }    
     /** Get the list of objects that are collide to the given box */
-    ArrayList<CollisionMask> collisionBoxTest(int x, int y, int w, int h) {
+    List<CollisionMask> collisionBoxTest(double x, double y, int w, int h) {
 	ArrayList<CollisionMask> m = new ArrayList<>();
-	collisionTree.retrieve(m, new Rectangle(x, y, w, h));
+	collisionTree.retrieve(m, new Rectangle((int) x, (int) y, w, h));
 	CollisionMask tmp = new CollisionMask(null, null, x, y, w, h);
 	for (int i = 0; i < m.size(); i++) {
-	    if(!m.get(i).check(m.get(i), tmp)) {
-		m.remove(m.get(i));
+	    if(!tmp.check(m.get(i).realBounds(), tmp)) {
+		m.remove(i); i--;
 	    }
 	}
 	return m;
@@ -818,10 +948,12 @@ public class JGameEngine {
 		clip = AudioSystem.getClip(); 
 	        clip.open(audioInputStream);     
 	    } catch(Exception e) {
-		System.out.println("Sound clip " + file + " doesn't exist or line unavailable. details: " + e.toString());
+		System.out.println("JGameEngine::Audio Sound clip (" + file + ") doesn't exist or line unavailable. details: " + e.toString());
 	    }
 	    if(loop)
 		clip.loop(Clip.LOOP_CONTINUOUSLY); 
+	    else 
+		clip.start();
 	    status = "playing";
 	}
 	private void play(float gain) {
@@ -859,7 +991,7 @@ public class JGameEngine {
 	    // remove inactive instances of this audio clip
 	    for(int i = 0; i < audios.size(); i++) 
 		if(audios.get(i).file.equalsIgnoreCase(path)) 
-		    if(!audios.get(i).clip.isRunning() && !audios.get(i).status.equals("paused")) audios.remove(i);
+		    if(!audios.get(i).clip.isRunning() && !audios.get(i).status.equals("paused")) { audios.remove(i); i--; }
 	    audios.add(new Audio(path, loop, gain));    
 	}
 	Audio find(String path) { 

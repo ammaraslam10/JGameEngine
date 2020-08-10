@@ -15,7 +15,7 @@ class ClockTest extends JGameEngine {
         // This line needs to be uncommented later
     }
     public static void main(String[] args) {
-		ClockTest c = new ClockTest();
+	ClockTest c = new ClockTest();
     }
 }
 ```
@@ -134,15 +134,15 @@ class Box extends JGameEngine.Object implements JGameEngine.Collision {
         name = "Box";
     }
     @Override public void start() {
-	    // Add collision mask relative to position at 0, 0 offset
+	// Add collision mask relative to position at 0, 0 offset
         e.collisionMaskAdd(this, 0, 0, width, height); 
     }
     @Override public void update() {
-	    // draw the box at each frame
+	// draw the box at each frame
         e.drawRect(x, y, width, height);
     }
     @Override public void collision(JGameEngine.Object with) {
-	    // Collision has occured
+	// Collision has occured
         System.out.println(this.name + " is touching " + with.name);
     }
 }
@@ -150,11 +150,11 @@ class BoxTest extends JGameEngine {
     public BoxTest() {
     	this.setWindow("JGameEngine test");
     	// Create two box objects
-		this.addObject(new Box(this, 0, 0, 50, 50));
-		this.addObject(new Box(this, 20, 30, 100, 50));
+	this.addObject(new Box(this, 0, 0, 50, 50));
+	this.addObject(new Box(this, 20, 30, 100, 50));
     }
     public static void main(String[] args) {
-		BoxTest c = new BoxTest();
+	BoxTest c = new BoxTest();
     }
 }
 ```

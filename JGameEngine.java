@@ -106,8 +106,6 @@ public class JGameEngine {
     void setWindow(String title) { if(collisionTree == null) setGameSpace(4000, 2250); setWindow(title, 16 * 50, 9 * 50); }
     /** Set a window with default settings 800, 450 with a default Game Space of 4000, 2250 (if not set) */
     void setWindow() { if(collisionTree == null) setGameSpace(4000, 2250); setWindow("JGameEngine :)"); }
-    /** Set the background colour */
-    void setBackground(Color c) { window.canvas.setBackground(c); }
     /** Get the screen width. */
     public int screenWidth() { return Toolkit.getDefaultToolkit().getScreenSize().width; }
     /** Get the screen height.  */
@@ -116,7 +114,9 @@ public class JGameEngine {
     public int windowWidth() { return window.canvas.getSize().width; }
     /** Get the window height. This is a raw value, See cameraHeight() for a more useful value. */
     public int windowHeight() { return window.canvas.getSize().height; }
-    /** Set window icon */
+    /** Set the background colour of the window */
+    void windowBackground(Color c) { window.canvas.setBackground(c); }
+    /** Set the icon of the window */
     public void windowIcon(String file) { ImageIcon img = new ImageIcon(file); window.setIconImage(img.getImage()); } 
     /** Set if the window is resizable by user */
     public void windowResizable(boolean stance) { window.setResizable(stance); }
@@ -567,7 +567,7 @@ public class JGameEngine {
 	else 
 	    objectRemove(camera);
     }
-    /** Set the camera to follow a Game Object at distance x, y from the object */
+    /** Set the camera to follow a Game Object at an offset of x, y from the object */
     void cameraFollow(JGameEngine.Object obj, double x, double y) {
 	cameraFollow(obj); camera.offset_x = x; camera.offset_y = y;
     }
@@ -674,7 +674,7 @@ public class JGameEngine {
 	int t = Font.PLAIN; if(type.equals("bold")) t = Font.BOLD; else if(type.equals("italic")) t = Font.ITALIC; 
 	draw().setFont(new Font(name, t, size * (int) camera.d)); 
 	fonts.addFont(name+type+"~"+size, draw().getFont()); }
-    /** Change the font of text to a custom font from a given file, ttf format supported only. */  
+    /** Create a Font Object from the given path, ttf format supported only. */  
     public Font textFontCreate(String path, float size) { 
 	int i = fonts.getFont(path+"~"+size); if(i != -1) return fonts.font.get(i); Font font = null;
 	try { font = Font.createFont(Font.TRUETYPE_FONT, new File(path)); font = font.deriveFont(size * (float) camera.d); }
@@ -682,9 +682,9 @@ public class JGameEngine {
 	if(font != null) fonts.addFont(path+"~"+size, font);
 	return font;
     }
-    /** Change the current font */
+    /** Change the current font to a Font Object */
     public void textFont(Font font) { fonts.addFont(font); draw().setFont(font); }
-    /** Change the current font */
+    /** Change the current font from the given path, ttf format supported only. */
     public void textFont(String path, float size) { draw().setFont(textFontCreate(path, size)); }
     /** Change the font size */
     public void textSize(float size) { int i = fonts.getFont(draw().getFont().getName()+"~"+size);

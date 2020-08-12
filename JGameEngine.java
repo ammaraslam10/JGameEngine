@@ -920,9 +920,9 @@ public class JGameEngine {
 	return collisionBoxTest(x,y,1,1);
     }    
     /** Get the list of objects that are collide to the given box */
-    List<CollisionMask> collisionBoxTest(double x, double y, int w, int h) {
+    List<CollisionMask> collisionBoxTest(double x, double y, double w, double h) {
 	ArrayList<CollisionMask> m = new ArrayList<>();
-	collisionTree.retrieve(m, new Rectangle((int) x, (int) y, w, h));
+	collisionTree.retrieve(m, new Rectangle((int) x, (int) y, (int) w, (int) h));
 	CollisionMask tmp = new CollisionMask(null, null, x, y, w, h);
 	for (int i = 0; i < m.size(); i++) {
 	    if(!tmp.check(m.get(i).realBounds(), tmp)) {

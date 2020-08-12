@@ -223,7 +223,7 @@ public class JGameEngine {
 			if(keyboard.allow_remove_pressed) { keyboard.removePressed(); keyboard.allow_remove_pressed = false; }
 			if(mouse.allow_remove_clicked) { mouse.removeClicked(); mouse.allow_remove_clicked = false; }
 			if(mouse.allow_remove_released) { mouse.removeReleased(); mouse.allow_remove_released = false; }
-			Thread.sleep(frameDelay);
+			if(frameDelay > 0) Thread.sleep(frameDelay);
 		  } catch (InterruptedException ex) { ex.printStackTrace(); } 
 		  finally { if( g != null ) g.dispose(); }
 	       } while( bs.contentsRestored() );

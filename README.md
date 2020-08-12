@@ -163,7 +163,7 @@ class BoxTest extends JGameEngine {
 | [`CollisionMask collisionMaskAdd(Object obj, double x, double y, double r)`](#) <br/> Create and add a circular collision mask for the object. | [`CollisionMask collisionMaskAdd(Object obj, double x, double y, double w, double h)`](#) <br/> Create and add a rectangular collision mask for the object. |
 | [`void collisionMaskRemove(CollisionMask m)`](#) <br/> Remove a collision mask. | [`void collisionMaskRemove(JGameEngine.Object o)`](#) <br/> Remove all masks of the Object. |
 | [`List<CollisionMask> collisionMaskList(Object obj)`](#) <br/> Return a list of masks that are associated with object. | [`void collisionMaskDebug()`](#) <br/> Draw all masks to debug. |
-| [`List<CollisionMask> collisionPointTest(int x, int y)`](#) <br/> Return a list of masks that collided with the given point. | [`List<CollisionMask> collisionBoxTest(int x, int y, int w, int h)`](#) <br/> Return a list of masks that collided with the given rectangle. |
+| [`List<CollisionMask> collisionPointTest(double x, double y)`](#) <br/> Return a list of masks that collided with the given point. | [`List<CollisionMask> collisionBoxTest(double x, double y, double w, double h)`](#) <br/> Return a list of masks that collided with the given rectangle. |
 
 
 ###  Misc

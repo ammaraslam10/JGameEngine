@@ -2,7 +2,13 @@
 
 # JGameEngine
 A basic class that uses a Canvas and a JFrame but bundles in basic 2D game development tools.
-To develop NES/SNES styled games like Mario and The Legend of Zelda, [JTiledUtility](https://github.com/ammaraslam10/JTiledUtility) may be used to simplify the map creation process. It is kept as a separate utility due to its dependence on the GSon library. Here's a [Demo Game](https://github.com/ammaraslam10/Minacre-JGameEngine-Game). The detailed documentation is present at the [Wiki](https://github.com/ammaraslam10/JGameEngine/wiki/Getting-Started).
+To develop NES/SNES styled games like Mario and The Legend of Zelda, [JTiledUtility](https://github.com/ammaraslam10/JTiledUtility) may be used to simplify the map creation process. It is kept as a separate utility due to its dependence on the GSon library. 
+
+[Demo Game](https://github.com/ammaraslam10/Minacre-JGameEngine-Game):
+
+![sample](https://user-images.githubusercontent.com/40186412/104167839-db4de780-541e-11eb-85e9-63d7e7a170eb.gif)
+
+The detailed documentation is present at the [Wiki](https://github.com/ammaraslam10/JGameEngine/wiki/Getting-Started).
 
 ## Usage
 A class may be extended to JGameEngine to initialize the components. A window needs to be added afterwards in order to have the display. Without `setWindow()`, no window will appear.
@@ -179,8 +185,8 @@ These don't belong to a category
 **Bugs**
 Yes there are many. Some of this code is untested (new features breaking previously working features).
 
-**OOP?**
-Most of the Object Orientation is hidden using Wrappers - this simplicity is inspired by Game Maker Studio's GML.
+**Single Class?**
+To Simplyfiy the design, All functionality has been built/wrapped under a single class - this simplicity is inspired by Game Maker Studio's GML.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.md file for details

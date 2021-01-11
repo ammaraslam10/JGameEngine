@@ -6,7 +6,7 @@ To develop NES/SNES styled games like Mario and The Legend of Zelda, [JTiledUtil
 
 [Demo Game](https://github.com/ammaraslam10/Minacre-JGameEngine-Game):
 
-![sample](https://user-images.githubusercontent.com/40186412/104167839-db4de780-541e-11eb-85e9-63d7e7a170eb.gif)
+<img src="https://user-images.githubusercontent.com/40186412/104167839-db4de780-541e-11eb-85e9-63d7e7a170eb.gif" width="300px" />
 
 The detailed documentation is present at the [Wiki](https://github.com/ammaraslam10/JGameEngine/wiki/Getting-Started).
 
